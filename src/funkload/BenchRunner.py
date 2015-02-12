@@ -143,7 +143,7 @@ def load_module(test_module):
     module = __import__(test_module)
     parts = test_module.split('.')[1:]
     while parts:
-        part = parts.pop()
+        part = parts.pop(0)
         module = getattr(module, part)
     return module
 
@@ -879,7 +879,7 @@ def run_distributed(options, module_name, class_name, method_name, sys_args):
     ret = None
     from funkload.Distributed import DistributionMgr
     global _manager
-    
+
     try:
         distmgr = DistributionMgr(
             module_name, class_name, method_name, options, sys_args)
@@ -887,7 +887,7 @@ def run_distributed(options, module_name, class_name, method_name, sys_args):
     except UserWarning, error:
         trace(red_str("Distribution failed with:%s \n" % (error)))
         return 1
-    
+
     try:
         try:
             distmgr.prepare_workers(allow_errors=True)
@@ -898,7 +898,7 @@ def run_distributed(options, module_name, class_name, method_name, sys_args):
     finally:
         # in any case we want to stop the workers at the end
         distmgr.abort()
-    
+
     _manager = None
     return ret
 
@@ -906,12 +906,12 @@ def run_local(options, module_name, class_name, method_name):
     ret = None
     RunnerClass = get_runner_class(options.bench_runner_class)
     bench = RunnerClass(module_name, class_name, method_name, options)
-    
+
     # Start a HTTP server optionally
     if options.debugserver:
         http_server_thread = FunkLoadHTTPServer(bench, options.debugport)
         http_server_thread.start()
-    
+
     try:
         ret = bench.run()
     except KeyboardInterrupt:
